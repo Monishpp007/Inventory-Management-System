@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% block title %}Stock Operations Reports{% endblock %}
+
+{% block content %}
+<div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
+    <i class="bi bi-clock"></i> Reports loaded at: {{ current_time }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>📊 Stock Operations Reports</h2>
+
+    <div>
+        <a href="{% url 'inventory:home' %}" class="btn btn-secondary me-2">← Back to Dashboard</a>
+        <select id="date-format" class="form-select me-2" style="width: auto; display: inline-block;">
+            <option value="none">No Date</option>
+            <option value="12hr" selected>12hr Format</option>
+            <option value="24hr">24hr Format</option>
+        </select>
+        <a href="#" onclick="exportPDF()" class="btn btn-primary">
+            📄 <i class="bi bi-download"></i> Export PDF
+        </a>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-5">
+    <div class="col-lg-3 col-md-6">
+        <div class="card">
+            <div class="card-header metric-header-items">
+                <h5>Total Transactions</h5>
+            </div>
+            <div class="card-body">
+                <h2>{{ total_transactions }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card">
+            <div class="card-header metric-header-purchases">
+                <h5>Total Purchases</h5>
+            </div>
+            <div class="card-body">
+                <h2>{{ total_purchases }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card">
+            <div class="card-header metric-header-sales">
+                <h5>Total Sales</h5>
+            </div>
+            <div class="card-body">
+                <h2>{{ total_sales }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card">
+            <div class="card-header metric-header-stock">
+                <h5>Net Stock Change</h5>
+            </div>
+            <div class="card-body">
+                <h2 class="{% if net_stock_change < 0 %}text-danger{% else %}text-success{% endif %}">{{ net_stock_change }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between">
+        <h4>📋 Recent Transactions</h4>
+    <a href="#all-transactions" class="btn btn-outline-primary btn-sm">View All →</a>
+
+<script>
+function exportPDF() {
+  const format = document.getElementById('date-format').value;
+  window.location.href = "{% url 'inventory:pdf_reports' %}?date_format=" + format;
+}
+</script>
+    </div>
+
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for trans in recent_transactions %}
+                    <tr>
+                        <td>{{ trans.date|date:"M d, Y h:i A" }}</td>
+                        <td>
+                            <span class="badge {% if trans.type == 'Purchase' %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ trans.type }}
+                            </span>
+                        </td>
+                        <td>{{ trans.item }}</td>
+                        <td><strong>{{ trans.quantity }}</strong></td>
+                    </tr>
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">No transactions yet. <a href="{% url 'inventory:purchase_item' %}">Make first purchase!</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- All Transactions -->
+<div id="all-transactions" class="card">
+    <div class="card-header d-flex justify-content-between">
+        <h4>All Stock Operations</h4>
+        <a href="{% url 'inventory:pdf_reports' %}" class="btn btn-primary btn-sm">
+            📄 PDF
+        </a>
+
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    {% for trans in all_transactions %}
+                    <tr>
+                        <td>{{ trans.date|date:"M d, Y h:i A" }}</td>
+                        <td>
+                            <span class="badge {% if trans.type == 'Purchase' %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ trans.type }}
+                            </span>
+                        </td>
+                        <td>{{ trans.item }}</td>
+                        <td><strong>{{ trans.quantity }}</strong></td>
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Item-wise Summary -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h4>📈 Item-wise Transaction Summary</h4>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Total Purchased</th>
+                        <th>Total Sold</th>
+                        <th>Net Change</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for summary in item_summary %}
+                    <tr>
+                        <td>{{ summary.item__name }}</td>
+                        <td><span class="badge bg-success">{{ summary.total_purchased }}</span></td>
+                        <td><span class="badge bg-danger">{{ summary.total_sold }}</span></td>
+                        <td class="{% if summary.net_change < 0 %}text-danger{% else %}text-success fw-bold{% endif %}">{{ summary.net_change }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">No transaction data available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+    <!-- Time card removed - now in navbar -->
+
+    <div class="row g-4 mb-5">
+
+
+    <div class="col-lg-3 col-md-6">
+        <div class="metric-card card">
+            <div class="card-header metric-header-items">
+                <h5>Total Items</h5>
+            </div>
+            <div class="card-body">
+                <h2>{{ total_items }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="metric-card card">
+            <div class="card-header metric-header-stock">
+                <h5>Total Stock</h5>
+            </div>
+            <div class="card-body">
+                <h2>{{ total_stock }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="metric-card card">
+            <div class="card-header metric-header-sales">
+                <h5>Total Sales</h5>
+            </div>
+            <div class="card-body">
+                <h2>{{ total_sales }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="metric-card card">
+            <div class="card-header metric-header-purchases">
+                <h5>Total Purchases</h5>
+            </div>
+            <div class="card-body">
+                <h2>{{ total_purchases }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if low_stock %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-warning">
+            ⚠️ Low Stock Items (< 10): {{ low_stock.count }}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-header">
+        <h4>📦 All Items</h4>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Quantity</th>
+                        <th>Price (₹)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr {% if item.quantity < 10 %}class="table-danger"{% endif %}>
+                        <td>{{ item.name }}</td>
+                        <td>
+                            <strong>{{ item.quantity }}</strong>
+                            {% if item.quantity < 10 %}<span class="badge bg-danger ms-2">Low Stock</span>{% endif %}
+                        </td>
+                        <td><strong>₹{{ item.price|floatformat:2 }}</strong></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center py-5">
+                            <div class="text-muted">
+                                No items yet. <a href="{% url 'inventory:add_item' %}" class="btn btn-primary">Add first item!</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Sale{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>Record Sale</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Select Item</label>
+                        <select class="form-select" name="item" required>
+                            <option value="">Choose...</option>
+                            {% for item in items %}
+                            <option value="{{ item.id }}">{{ item.name }} (Stock: {{ item.quantity }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Quantity to Sell</label>
+                        <input type="number" class="form-control" name="quantity" min="1" required>
+                    </div>
+                    <button type="submit" class="btn btn-danger">Record Sale</button>
+                    <a href="{% url 'inventory:home' %}" class="btn btn-secondary">Back to Dashboard</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

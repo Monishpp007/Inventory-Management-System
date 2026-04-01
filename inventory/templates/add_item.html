@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Add Item{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>Add New Item</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Item Name</label>
+                        <input type="text" class="form-control" name="name" required minlength="2">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Initial Quantity</label>
+                        <input type="number" class="form-control" name="quantity" value="0" min="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Price (₹)</label>
+                        <input type="number" step="0.01" class="form-control" name="price" min="0" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Item</button>
+                    <a href="{% url 'inventory:home' %}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
